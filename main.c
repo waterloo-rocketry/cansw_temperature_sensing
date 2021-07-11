@@ -8,8 +8,11 @@
 #include "canlib/util/can_tx_buffer.h"
 #include "canlib/pic18f26k83/pic18f26k83_timer.h"
 
-#include "leds.h"
+#include "setup.h"
+#include "spi.h"
+#include "temperature.h"
 
+#define _XTAL_FREQ 12000000 //12MHz
 #define MAX_LOOP_TIME_DIFF_ms 500
 
 // Memory pool for CAN transmit buffer
@@ -17,30 +20,6 @@ uint8_t tx_pool[100];
 
 static void can_msg_handler(const can_msg_t *msg);
 static void send_status_ok(void);
-
-void pin_init() {
-    // set RA port as output or input (for LEDs or fill level)
-    TRISA = 0b00000111;
-
-    // set RB and RC as input ports
-    TRISB = 0b00111111;
-    TRISC = 0b11111111;
-
-    // enable interrupt-on-change for RA, RB and RC on falling edge
-    IOCAN = 0b00000110;
-    IOCBN = 0b00111111;
-    IOCCN = 0b11111100;
-
-    // disable analog inputs
-    ANSELA &= 0b11111001;
-    ANSELB = 0b00000000;
-    ANSELC = 0b00000000;
-
-    // clear flags (just in case)
-    IOCAF = 0b00000000;
-    IOCCF = 0b00000000;
-    IOCBF = 0b00000000;
-}
 
 // top level ISR
 static void __interrupt() interrupt_handler() {
@@ -61,6 +40,8 @@ static void __interrupt() interrupt_handler() {
 int main(int argc, char** argv) {
     // initialize pins, interrupts
     pin_init();
+    osc_init();
+    spi_init();
 
     // enable global interrupts
     INTCON0bits.GIE = 1;
@@ -101,6 +82,8 @@ int main(int argc, char** argv) {
             BLUE_LED = !BLUE_LED;
 
             send_status_ok();
+            
+            config_channel(1, 0xE4C00000, cs_write_1);
         }
         
         // send queued messages

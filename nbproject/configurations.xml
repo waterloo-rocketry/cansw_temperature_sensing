@@ -25,7 +25,8 @@
         <itemPath>mcc_generated_files/pin_manager.h</itemPath>
         <itemPath>mcc_generated_files/mcc.h</itemPath>
       </logicalFolder>
-      <itemPath>leds.h</itemPath>
+      <itemPath>spi.h</itemPath>
+      <itemPath>setup.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -40,7 +41,10 @@
         <itemPath>mcc_generated_files/pin_manager.c</itemPath>
       </logicalFolder>
       <itemPath>main.c</itemPath>
-      <itemPath>leds.c</itemPath>
+      <itemPath>spi.c</itemPath>
+      <itemPath>setup.c</itemPath>
+      <itemPath>temperature.c</itemPath>
+      <itemPath>temperature.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -59,7 +63,7 @@
         <targetDevice>PIC18F26K83</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>PICkit3PlatformTool</platformTool>
+        <platformTool>noID</platformTool>
         <languageToolchain>XC8</languageToolchain>
         <languageToolchainVersion>2.05</languageToolchainVersion>
         <platform>3</platform>
@@ -96,6 +100,7 @@
       <HI-TECH-COMP>
         <property key="additional-warnings" value="true"/>
         <property key="asmlist" value="true"/>
+        <property key="call-prologues" value="false"/>
         <property key="default-bitfield-type" value="true"/>
         <property key="default-char-type" value="true"/>
         <property key="define-macros" value=""/>
@@ -180,7 +185,6 @@
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
         <property key="debugoptions.useswbreakpoints" value="false"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>
@@ -224,6 +228,7 @@
         <property key="gcc-opt-std" value="-std=c99"/>
         <property key="gcc-output-file-format" value="dwarf-3"/>
         <property key="omit-pack-options" value="false"/>
+        <property key="omit-pack-options-new" value="1"/>
         <property key="output-file-format" value="-mcof,+elf"/>
         <property key="stack-size-high" value="auto"/>
         <property key="stack-size-low" value="auto"/>
