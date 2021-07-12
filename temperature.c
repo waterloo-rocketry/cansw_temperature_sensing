@@ -28,7 +28,7 @@ void cs_write_3(uint8_t state){
 
 
 bool config_channel(uint8_t channel_num, uint32_t config_word, 
-                    void *cs_write(uint8_t)){
+                    void (*cs_write)(uint8_t)){
     
     if(channel_num > 20 || channel_num == 0) return false; //invalid num
     

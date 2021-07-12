@@ -40,7 +40,7 @@ void spi_init(void){
 }
 
 bool spi_transfer(uint8_t* send_data, uint8_t* receive_data, 
-                  uint8_t datalen, void *cs_write(uint8_t)){
+                  uint8_t datalen, void (*cs_write)(uint8_t)){
     
     if(!send_data || !receive_data){
         return false; // passed a null pointer
@@ -50,12 +50,12 @@ bool spi_transfer(uint8_t* send_data, uint8_t* receive_data,
     }
     
     SPI1STATUSbits.CLRBF = 1; //ensure buffers are clear
-    SPI1TCNTH = datalen; // set the number of bytes to transfer
+    SPI1TCNTL = datalen; // set the number of bytes to transfer
     
     cs_write(0); //drive chip select line low
     
     //while there are more bytes to transfer or we are busy
-    while(SPI1TCNTH > 0 || SPI1CON2bits.BUSY){
+    while(SPI1TCNTL > 0 || SPI1CON2bits.BUSY){
         if(SPI1RXB != 0){ // if there is something in the receive buffer
             *receive_data = SPI1RXB; //read a byte if available
             receive_data++; // increment to the next byte
