@@ -17,6 +17,7 @@
 
 // Memory pool for CAN transmit buffer
 uint8_t tx_pool[100];
+uint32_t result = 0;
 
 static void can_msg_handler(const can_msg_t *msg);
 static void send_status_ok(void);
@@ -72,6 +73,7 @@ int main(int argc, char** argv) {
  
     uint32_t last_millis = millis();
 
+    config_channel(10, 0xE4C00000, cs_write_1);
     // main loop
     while (true) {
         
@@ -83,7 +85,9 @@ int main(int argc, char** argv) {
 
             send_status_ok();
             
-            config_channel(1, 0xE4C00000, cs_write_1);
+            result = get_conversion(10, cs_write_1);
+            start_conversion(10, cs_write_1);
+            //get_status(cs_write_1);
         }
         
         // send queued messages

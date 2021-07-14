@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+uint8_t test_data[7];
+
 // sets up SPI module
 void spi_init(void);
 
