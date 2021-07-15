@@ -81,10 +81,10 @@ uint32_t get_conversion(uint8_t channel_num, void (*cs_write)(uint8_t)){
     
     uint32_t result = 0;
     if(spi_transfer(send_data, receive_data, 7, cs_write)){
-        result = receive_data[3] << 24;
-        result |= receive_data[4] << 16;
-        result |= receive_data[5] << 8;
-        result |= receive_data[6];  
+        result = (receive_data[3] << 24) & 0xFF000000;
+        result |= receive_data[4] << 16 & 0xFF0000;
+        result |= receive_data[5] << 8 & 0xFF00;
+        result |= receive_data[6] & 0xFF;  
     }
     else{
         result = 0x00100000; // return -8191 and 1023/1024 degrees
