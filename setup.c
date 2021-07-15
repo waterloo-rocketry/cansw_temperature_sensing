@@ -14,6 +14,19 @@ void pin_init(void){
     ANSELA5 = 0; // Enable digital input buffer
     LATA5 = 1; // turn the red LED off
     
+    //conversion complete pins
+    //board 1 interrupt is B3
+    TRISB3 = 1; //set as input
+    ANSELB3 = 0; //enable digital input buffer
+    
+    //board 2 interrupt is B2
+    TRISB2 = 1; //set as input
+    ANSELB2 = 0; //enable digital input buffer
+    
+    //board 3 interrupt is B5
+    TRISB5 = 1; //set as input
+    ANSELB5 = 0; //enable digital input buffer
+    
     //CS pins
     //board 1 on C4
     TRISC4 = 0; // set C4 as an output

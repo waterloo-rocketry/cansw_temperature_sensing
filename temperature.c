@@ -1,9 +1,6 @@
 #include "temperature.h"
 
 
-bool init_temp_ref_diodes(void){
-    return true;
-}
 
 void cs_write_1(uint8_t state){
     if(!state)
@@ -26,7 +23,6 @@ void cs_write_3(uint8_t state){
         LATB0 = 1;
 }
 
-
 bool config_channel(uint8_t channel_num, uint32_t config_word, 
                     void (*cs_write)(uint8_t)){
     
@@ -46,6 +42,20 @@ bool config_channel(uint8_t channel_num, uint32_t config_word,
     
     return spi_transfer(send_data, receive_data, 7, cs_write);
     
+}
+
+bool config_temp_ref_diodes(void (*cs_write)(uint8_t)){
+    bool success = true;
+    success &= config_channel(6, DIODE_CONFIG_WORD, cs_write);
+    success &= config_channel(10, DIODE_CONFIG_WORD, cs_write);
+    success &= config_channel(16, DIODE_CONFIG_WORD, cs_write);
+    success &= config_channel(20, DIODE_CONFIG_WORD, cs_write);
+    
+    return success;
+}
+
+bool config_tc(uint8_t channel_num, void (*cs_write)(uint8_t)){
+    return false;
 }
 
 bool start_conversion(uint8_t channel_num, void (*cs_write)(uint8_t)){
@@ -81,10 +91,10 @@ uint32_t get_conversion(uint8_t channel_num, void (*cs_write)(uint8_t)){
     
     uint32_t result = 0;
     if(spi_transfer(send_data, receive_data, 7, cs_write)){
-        result = (receive_data[3] << 24) & 0xFF000000;
-        result |= receive_data[4] << 16 & 0xFF0000;
-        result |= receive_data[5] << 8 & 0xFF00;
-        result |= receive_data[6] & 0xFF;  
+        result = ((uint32_t)receive_data[3] << 24) & 0xFF000000;
+        result |= ((uint32_t)receive_data[4] << 16) & 0xFF0000;
+        result |= ((uint32_t)receive_data[5] << 8) & 0xFF00;
+        result |= (uint32_t)receive_data[6] & 0xFF;  
     }
     else{
         result = 0x00100000; // return -8191 and 1023/1024 degrees
