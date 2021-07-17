@@ -20,8 +20,8 @@
 // 21 bytes for worst case 20 channels + null terminator
 // use type char so I can cheat and use strlen()
 char board_1_map[21] = {7};
-char board_2_map[21] = {7, 8};
-char board_3_map[21] = {7, 8, 9, 13};
+char board_2_map[21] = {};
+char board_3_map[21] = {};
 
 // Memory pool for CAN transmit buffer
 uint8_t tx_pool[100];

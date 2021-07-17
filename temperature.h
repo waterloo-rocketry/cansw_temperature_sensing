@@ -6,7 +6,18 @@
 
 #include "spi.h"
 
+//5msb are sensor type. 0b11100 for diode
+//next 3 bits are config. 0b100 for single ended, 2 current levels, no averaging
+//next 2 are excitation current. 0b11 for 80uA
+//the rest are for ideality factor, which is currently unknown
 #define DIODE_CONFIG_WORD 0xE4C00000
+
+//thermocouple
+//5msb are TC type. 0b00010 for K
+//next 5 bits are cold junction pointer, set by config function
+//next 4 bits are sensor config. 0b1100 for single ended and 10uA open circuit check
+//0b0001 0000 0011 00 ...
+#define TC_CONFIG_WORD 0x10300000
 
 void cs_write_1(uint8_t state);
 void cs_write_2(uint8_t state);

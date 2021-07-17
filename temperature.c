@@ -55,7 +55,18 @@ bool config_temp_ref_diodes(void (*cs_write)(uint8_t)){
 }
 
 bool config_tc(uint8_t channel_num, void (*cs_write)(uint8_t)){
-    return false;
+    uint8_t cold_junc_ch = 0;
+    if(channel_num > 0 && channel_num < 6) cold_junc_ch = 6;
+    else if(channel_num > 6 && channel_num < 10) cold_junc_ch = 10;
+    else if(channel_num > 10 && channel_num < 16) cold_junc_ch = 16;
+    else if(channel_num > 16 && channel_num < 20) cold_junc_ch = 20;
+    else{
+        //If it wasn't in one of those ranges, then it isn't valid
+        return false;
+    }
+    // add the cold junction channel to the config word
+    uint32_t config_word = TC_CONFIG_WORD | ((cold_junc_ch & 0x1F) << 22);
+    return config_channel(channel_num, config_word, cs_write);
 }
 
 bool start_conversion(uint8_t channel_num, void (*cs_write)(uint8_t)){
