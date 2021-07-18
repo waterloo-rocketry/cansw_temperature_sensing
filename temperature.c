@@ -108,7 +108,8 @@ uint32_t get_conversion(uint8_t channel_num, void (*cs_write)(uint8_t)){
         result |= (uint32_t)receive_data[6] & 0xFF;  
     }
     else{
-        result = 0x00100000; // return -8191 and 1023/1024 degrees
+        //result = 0x00100000; // return -8191 and 1023/1024 degrees
+        result = 0x55555555;
     }
     
     return result;

@@ -20,8 +20,8 @@
 // 21 bytes for worst case 20 channels + null terminator
 // use type char so I can cheat and use strlen()
 char board_1_map[21] = {7};
-char board_2_map[21] = {};
-char board_3_map[21] = {};
+char board_2_map[21] = {7};
+char board_3_map[21] = {7};
 
 // Memory pool for CAN transmit buffer
 uint8_t tx_pool[100];
@@ -35,6 +35,10 @@ int main(int argc, char** argv) {
     pin_init();
     osc_init();
     spi_init();
+    
+    //now that the clock is setup
+    //give the temp chip time to boot
+    __delay_ms(500);
 
     // enable global interrupts
     INTCON0bits.GIE = 1;
@@ -81,41 +85,45 @@ int main(int argc, char** argv) {
     start_conversion(board_3_map[idx_3], cs_write_3);    
     
     uint32_t last_millis = millis();
+    uint32_t last_measure_millis = millis();
     
     // main loop
     while (true) {
         
         //handle temp measurements
         //should add support for error bits
-        if(CONVERSION_COMPLETE_1){
-            uint32_t result_1 = get_conversion(board_1_map[idx_1], cs_write_1);
-            can_msg_t temp_1_msg;
-            //canlib will throw out the MSB and only send the result (the 3 LSB)
-            build_temp_data_msg(millis(), 10 + idx_1, result_1, &temp_1_msg);
-            txb_enqueue(&temp_1_msg);
-            idx_1++;
-            if(idx_1 > strlen(board_1_map)) idx_1 = 0;
-            start_conversion(board_1_map[idx_1], cs_write_1);
-        }
-        if(CONVERSION_COMPLETE_2){
-            uint32_t result_2 = get_conversion(board_2_map[idx_2], cs_write_2);
-            can_msg_t temp_2_msg;
-            //canlib will throw out the MSB and only send the result (the 3 LSB)
-            build_temp_data_msg(millis(), 20 + idx_2, result_2, &temp_2_msg);
-            txb_enqueue(&temp_2_msg);
-            idx_2++;
-            if(idx_2 > strlen(board_2_map)) idx_2 = 0;
-            start_conversion(board_2_map[idx_2], cs_write_2);
-        }
-        if(CONVERSION_COMPLETE_3){
-            uint32_t result_3 = get_conversion(board_3_map[idx_3], cs_write_3);
-            can_msg_t temp_3_msg;
-            //canlib will throw out the MSB and only send the result (the 3 LSB)
-            build_temp_data_msg(millis(), 30 + idx_3, result_3, &temp_3_msg);
-            txb_enqueue(&temp_3_msg);
-            idx_3++;
-            if(idx_3 > strlen(board_3_map)) idx_3 = 0;
-            start_conversion(board_3_map[idx_3], cs_write_3);
+        if(millis() > last_measure_millis + 0) {
+            last_measure_millis = millis();
+            if(CONVERSION_COMPLETE_1){
+                uint32_t result_1 = get_conversion(board_1_map[idx_1], cs_write_1);
+                can_msg_t temp_1_msg;
+                //canlib will throw out the MSB and only send the result (the 3 LSB)
+                build_temp_data_msg(millis(), 10 + idx_1, result_1, &temp_1_msg);
+                txb_enqueue(&temp_1_msg);
+                idx_1++;
+                if(idx_1 >= strlen(board_1_map)) idx_1 = 0;
+                start_conversion(board_1_map[idx_1], cs_write_1);
+            }
+            if(CONVERSION_COMPLETE_2){
+                uint32_t result_2 = get_conversion(board_2_map[idx_2], cs_write_2);
+                can_msg_t temp_2_msg;
+                //canlib will throw out the MSB and only send the result (the 3 LSB)
+                build_temp_data_msg(millis(), 20 + idx_2, result_2, &temp_2_msg);
+                txb_enqueue(&temp_2_msg);
+                idx_2++;
+                if(idx_2 >= strlen(board_2_map)) idx_2 = 0;
+                start_conversion(board_2_map[idx_2], cs_write_2);
+            }
+            if(CONVERSION_COMPLETE_3){
+                uint32_t result_3 = get_conversion(board_3_map[idx_3], cs_write_3);
+                can_msg_t temp_3_msg;
+                //canlib will throw out the MSB and only send the result (the 3 LSB)
+                build_temp_data_msg(millis(), 30 + idx_3, result_3, &temp_3_msg);
+                txb_enqueue(&temp_3_msg);
+                idx_3++;
+                if(idx_3 >= strlen(board_3_map)) idx_3 = 0;
+                start_conversion(board_3_map[idx_3], cs_write_3);
+            }
         }
         
         //general stuff
@@ -127,8 +135,6 @@ int main(int argc, char** argv) {
 
             send_status_ok();
             
-            result = get_conversion(10, cs_write_1);
-            start_conversion(10, cs_write_1);
             //get_status(cs_write_1);
         }
         

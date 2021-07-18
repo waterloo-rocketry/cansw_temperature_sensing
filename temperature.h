@@ -15,9 +15,9 @@
 //thermocouple
 //5msb are TC type. 0b00010 for K
 //next 5 bits are cold junction pointer, set by config function
-//next 4 bits are sensor config. 0b1100 for single ended and 10uA open circuit check
-//0b0001 0000 0011 00 ...
-#define TC_CONFIG_WORD 0x10300000
+//next 4 bits are sensor config. 0b1000 for single ended, no open circuit check (faster)
+//0b0001 0000 0010 00 ...
+#define TC_CONFIG_WORD 0x10200000
 
 void cs_write_1(uint8_t state);
 void cs_write_2(uint8_t state);
