@@ -1,4 +1,3 @@
-// TODO(wendi): init external oscillator, then change this to 12MHz
 #include <stdint.h>
 #include <string.h>
 #include "mcc_generated_files/mcc.h"
@@ -35,9 +34,9 @@ int main(int argc, char** argv) {
     pin_init();
     osc_init();
     spi_init();
-    
-    //now that the clock is setup
-    //give the temp chip time to boot
+
+    // now that the clock is setup
+    // give the temp chip time to boot
     __delay_ms(500);
 
     // enable global interrupts
@@ -45,7 +44,7 @@ int main(int argc, char** argv) {
 
     // initialize timer
     timer0_init();
-    
+
     /***********set up CAN**********/
     // Set up CAN TX
     TRISC0 = 0;
@@ -62,7 +61,7 @@ int main(int argc, char** argv) {
 
     // set up CAN tx buffer
     txb_init(tx_pool, sizeof(tx_pool), can_send, can_send_rdy);
-    
+
     /***********Setup Temp Sensor Channels***********/
     config_temp_ref_diodes(cs_write_1); // for board 1
     config_temp_ref_diodes(cs_write_2); // for board 2
@@ -73,71 +72,66 @@ int main(int argc, char** argv) {
     for(uint8_t idx = 0; idx < strlen(board_2_map); idx++){
         config_tc(board_2_map[idx], cs_write_2);
     }
-    for(uint8_t idx = 0; idx < strlen(board_2_map); idx++){
+    for(uint8_t idx = 0; idx < strlen(board_3_map); idx++){
         config_tc(board_3_map[idx], cs_write_3);
     }
-    
+
     // indices for tracking which channel to measure
     uint8_t idx_1 = 0, idx_2 = 0, idx_3 = 0;
     // start the first conversion on each board
     start_conversion(board_1_map[idx_1], cs_write_1);
     start_conversion(board_2_map[idx_2], cs_write_2);
-    start_conversion(board_3_map[idx_3], cs_write_3);    
-    
+    start_conversion(board_3_map[idx_3], cs_write_3);
+
     uint32_t last_millis = millis();
     uint32_t last_measure_millis = millis();
-    
+
     // main loop
     while (true) {
-        
-        //handle temp measurements
-        //should add support for error bits
-        if(millis() > last_measure_millis + 0) {
-            last_measure_millis = millis();
-            if(CONVERSION_COMPLETE_1){
-                uint32_t result_1 = get_conversion(board_1_map[idx_1], cs_write_1);
-                can_msg_t temp_1_msg;
-                //canlib will throw out the MSB and only send the result (the 3 LSB)
-                build_temp_data_msg(millis(), 10 + idx_1, result_1, &temp_1_msg);
-                txb_enqueue(&temp_1_msg);
-                idx_1++;
-                if(idx_1 >= strlen(board_1_map)) idx_1 = 0;
-                start_conversion(board_1_map[idx_1], cs_write_1);
-            }
-            if(CONVERSION_COMPLETE_2){
-                uint32_t result_2 = get_conversion(board_2_map[idx_2], cs_write_2);
-                can_msg_t temp_2_msg;
-                //canlib will throw out the MSB and only send the result (the 3 LSB)
-                build_temp_data_msg(millis(), 20 + idx_2, result_2, &temp_2_msg);
-                txb_enqueue(&temp_2_msg);
-                idx_2++;
-                if(idx_2 >= strlen(board_2_map)) idx_2 = 0;
-                start_conversion(board_2_map[idx_2], cs_write_2);
-            }
-            if(CONVERSION_COMPLETE_3){
-                uint32_t result_3 = get_conversion(board_3_map[idx_3], cs_write_3);
-                can_msg_t temp_3_msg;
-                //canlib will throw out the MSB and only send the result (the 3 LSB)
-                build_temp_data_msg(millis(), 30 + idx_3, result_3, &temp_3_msg);
-                txb_enqueue(&temp_3_msg);
-                idx_3++;
-                if(idx_3 >= strlen(board_3_map)) idx_3 = 0;
-                start_conversion(board_3_map[idx_3], cs_write_3);
-            }
+
+        // handle temp measurements
+        // should add support for error bits
+        if(CONVERSION_COMPLETE_1){
+            uint32_t result_1 = get_conversion(board_1_map[idx_1], cs_write_1);
+            can_msg_t temp_1_msg;
+            // canlib will throw out the MSB and only send the result (the 3 LSB)
+            build_temp_data_msg(millis(), 10 + idx_1, result_1, &temp_1_msg);
+            txb_enqueue(&temp_1_msg);
+            idx_1++;
+            if(idx_1 >= strlen(board_1_map)) idx_1 = 0;
+            start_conversion(board_1_map[idx_1], cs_write_1);
         }
-        
-        //general stuff
+        if(CONVERSION_COMPLETE_2){
+            uint32_t result_2 = get_conversion(board_2_map[idx_2], cs_write_2);
+            can_msg_t temp_2_msg;
+            // canlib will throw out the MSB and only send the result (the 3 LSB)
+            build_temp_data_msg(millis(), 20 + idx_2, result_2, &temp_2_msg);
+            txb_enqueue(&temp_2_msg);
+            idx_2++;
+            if(idx_2 >= strlen(board_2_map)) idx_2 = 0;
+            start_conversion(board_2_map[idx_2], cs_write_2);
+        }
+        if(CONVERSION_COMPLETE_3){
+            uint32_t result_3 = get_conversion(board_3_map[idx_3], cs_write_3);
+            can_msg_t temp_3_msg;
+            // canlib will throw out the MSB and only send the result (the 3 LSB)
+            build_temp_data_msg(millis(), 30 + idx_3, result_3, &temp_3_msg);
+            txb_enqueue(&temp_3_msg);
+            idx_3++;
+            if(idx_3 >= strlen(board_3_map)) idx_3 = 0;
+            start_conversion(board_3_map[idx_3], cs_write_3);
+        }
+
+        // general stuff
         if(millis() > last_millis + MAX_LOOP_TIME_DIFF_ms) {
             last_millis = millis();
-            
+
             // heartbeat LED
             BLUE_LED = !BLUE_LED;
 
             send_status_ok();
-            
-            //get_status(cs_write_1);
         }
-        
+
         // send queued messages
         txb_heartbeat();
 
@@ -173,14 +167,14 @@ static void can_msg_handler(const can_msg_t *msg) {
 
 // top level ISR
 static void __interrupt() interrupt_handler() {
-    
+
     // Timer0 has overflowed - update millis() function
     // This happens approximately every 500us
     if (PIE3bits.TMR0IE == 1 && PIR3bits.TMR0IF == 1) {
         timer0_handle_interrupt();
         PIR3bits.TMR0IF = 0;
     }
-    
+
     // handle CAN interrupts
     if (PIR5) {
         can_handle_interrupt();
